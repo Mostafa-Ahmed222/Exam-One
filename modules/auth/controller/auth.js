@@ -7,7 +7,7 @@ export const signup = async (req, res) => {
   try {
     const user = await userModel.findOne({ email });
     if (user) {
-      res.json({ message: "Email Exist" });
+      res.status(400).json({ message: "Email Exist" });
     } else {
       const hashPassword = await bcrypt.hash(
         password,
@@ -44,10 +44,10 @@ export const signup = async (req, res) => {
       <a href='${link2}'> follow link to Rerequest confirm your account</a>
       `;
       sendMail(savedUser.email, message);
-      res.json({ message: "Done please check your email to confirm it" });
+      res.status(201).json({ message: "Done please check your email to confirm it" });
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const confirmEmail = async (req, res) => {
@@ -55,27 +55,27 @@ export const confirmEmail = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.tokenEmailSignature);
     if (!decoded || !decoded.id) {
-      res.json({ message: "In-Valid Token" });
+      res.status(400).json({ message: "In-Valid Token" });
     } else {
       const user = await userModel
         .findById(decoded.id)
         .select("email confirmEmail");
       if (!user) {
-        res.json({ message: "In-Valid account id" });
+        res.status(404).json({ message: "In-Valid account id" });
       } else {
         if (user.confirmEmail) {
-          res.json({ message: "email already confirmed" });
+          res.status(400).json({ message: "email already confirmed" });
         } else {
           await userModel.updateOne(
             { email: user.email },
             { confirmEmail: true }
           );
-          res.json({ message: "Done Please Signin" });
+          res.status(200).json({ message: "Done Please Signin" });
         }
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const refreshToken = async (req, res) => {
@@ -83,16 +83,16 @@ export const refreshToken = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.tokenEmailSignature);
     if (!decoded || !decoded.id) {
-      res.json({ message: "In-Valid Token" });
+      res.status(400).json({ message: "In-Valid Token" });
     } else {
       const user = await userModel
         .findById(decoded.id)
         .select("email confirmEmail");
       if (!user) {
-        res.json({ message: "In-Valid account id" });
+        res.status(400).json({ message: "In-Valid account id" });
       } else {
         if (user.confirmEmail) {
-          res.json({ message: "email already confirmed" });
+          res.status(400).json({ message: "email already confirmed" });
         } else {
           const token = jwt.sign(
             { id: user._id },
@@ -104,12 +104,12 @@ export const refreshToken = async (req, res) => {
       <a href='${link}'> follow link to confirm your account</a>
       `;
           sendMail(user.email, message);
-          res.json({ message: "Done please check your email to confirm it" });
+          res.status(200).json({ message: "Done please check your email to confirm it" });
         }
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const signin = async (req, res) => {
@@ -117,20 +117,20 @@ export const signin = async (req, res) => {
   try {
     const user = await userModel.findOne({ email });
     if (!user) {
-      res.json({ message: "In-Valid account data" });
+      res.status(400).json({ message: "In-Valid account data" });
     } else {
       if (!user.confirmEmail) {
-        res.json({ message: "please confirm your email first" });
+        res.status(400).json({ message: "please confirm your email first" });
       } else {
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-          res.json({ message: "In-Valid account data" });
+          res.status(400).json({ message: "In-Valid account data" });
         } else {
           if (user.isDeleted || user.isBlocked) {
-            res.json({ message: "Email may Be Deleted or Blocked by Admin" });
+            res.status(400).json({ message: "Email may Be Deleted or Blocked by Admin" });
           } else {
             if (user.isOnline) {
-              res.json({ message: "email already signin" });
+              res.status(400).json({ message: "email already signin" });
             } else {
               await userModel.updateOne({ email }, { isOnline: true });
               const token = jwt.sign(
@@ -138,14 +138,14 @@ export const signin = async (req, res) => {
                 process.env.tokenSignature,
                 { expiresIn: 60 * 60 * 24 }
               );
-              res.json({ message: "Done", token });
+              res.status(200).json({ message: "Done", token });
             }
           }
         }
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const sendAccessLink = async (req, res) => {
@@ -153,7 +153,7 @@ export const sendAccessLink = async (req, res) => {
   try {
     const user = await userModel.findOneAndUpdate({ email }, {code : false}).select("email");
     if (!user) {
-      res.json({ message: "email not found" });
+      res.status(404).json({ message: "email not found" });
     } else {
       const token = jwt.sign(
         { id: user._id },
@@ -168,10 +168,10 @@ export const sendAccessLink = async (req, res) => {
       <p>Note: this link access for one time</p>
       `;
       sendMail(user.email, message);
-      res.json({ message: "Done please check your email" });
+      res.status(200).json({ message: "Done please check your email" });
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const forgetPassword = async (req, res) => {
@@ -180,27 +180,27 @@ export const forgetPassword = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.forgetTokenSignature);
     if (!decoded || !decoded.id) {
-      res.json({ message: "In-Valid token" });
+      res.status(400).json({ message: "In-Valid token" });
     } else {
       const user = await userModel
         .findOne({ email, _id: decoded.id })
         .select("email");
       if (!user) {
-        res.json({ message: "In-Valid account" });
+        res.status(404).json({ message: "In-Valid account" });
       } else {
         if (user.code) {
-          res.json({ message: "can not use this link more than one" });
+          res.status(405).json({ message: "can not use this link more than one" });
         } else {
           const hashPassword = await bcrypt.hash(newPassword, parseInt(process.env.saltRound))
           await userModel.updateOne(
             { email, _id: decoded.id },
             { password: hashPassword, isOnline: false }
           );
-          res.json({ message: "Done please signin with new password" });
+          res.status(200).json({ message: "Done please signin with new password" });
         }
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };

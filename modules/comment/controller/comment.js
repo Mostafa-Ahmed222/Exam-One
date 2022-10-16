@@ -12,7 +12,7 @@ export const addComment = async (req, res) => {
       confirmEmail: true,
     });
     if (!user) {
-      res.json({
+      res.status(404).json({
         message: "In-Valid User Id or may Be Deleted or Blocked by Admin",
       });
     } else {
@@ -22,7 +22,7 @@ export const addComment = async (req, res) => {
       });
       const comments = product.comments
       if (!product) {
-        res.json({ message: "In-Valid Product Id or may Be Deleted" });
+        res.status(404).json({ message: "In-Valid Product Id or may Be Deleted" });
       } else {
         const comment = new commentModel({
           commentBody,
@@ -32,11 +32,11 @@ export const addComment = async (req, res) => {
         await comment.save();
         const commentsArr = [...comments, {comment : comment._id} ]
         await productModel.updateOne({_id: productId}, {comments : commentsArr})
-        res.json({message : 'Done'})
+        res.status(200).json({message : 'Done'})
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const updateComment = async (req, res) => {
@@ -84,12 +84,12 @@ export const updateComment = async (req, res) => {
         },
       ]);
     if (!comment) {
-      res.json({ message: "In-Valid Owner Id or Comment Id" });
+      res.status(400).json({ message: "In-Valid Owner Id or Comment Id" });
     } else {
-      res.json({ message: "Done", comment });
+      res.status(200).json({ message: "Done", comment });
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };
 export const softDelete = async (req, res) => {
@@ -115,14 +115,14 @@ export const softDelete = async (req, res) => {
       },
     ]);
     if (!comment) {
-      res.json({ message: "In-valid Comment Id or already deleted" });
+      res.status(404).json({ message: "In-valid Comment Id or already deleted" });
     } else {
       if (deletedBy == comment.createdBy._id) {
         await commentModel.updateOne(
           { id },
           { deletedBy: comment.createdBy._id , isDeleted : true}
         );
-        res.json({
+        res.status(200).json({
           message: "Done deleted by comment owner",
           deleatedBy: comment.createdBy.firstName,
         });
@@ -131,15 +131,15 @@ export const softDelete = async (req, res) => {
             { id },
             { deletedBy: comment.productId._id , isDeleted : true}
           );
-          res.json({
+          res.status(200).json({
             message: "Done deleted by Ptoduct owner",
             deleatedBy: comment.productId.createdBy.firstName,
           });
       } else {
-        res.json({ message: "In-Valid id or user can not access" });
+        res.status(405).json({ message: "In-Valid id or user can not access" });
       }
     }
   } catch (error) {
-    res.json({ message: "catch error", error });
+    res.status(500).json({ message: "catch error", error });
   }
 };

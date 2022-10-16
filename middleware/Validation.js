@@ -20,21 +20,3 @@ const validation = (Schema) => {
   };
 };
 export default validation
-/* 
-    dataMethod.forEach((key) => {
-      if (Schema[key]) {
-        const validationResult = Schema[key].validate(req[key], {
-          abortEarly: false,
-        });
-        if (validationResult.error) {
-          validationArr.push(validationResult.error.details);
-        }
-      }
-    });
-    if (validationArr.length) {
-        res.json({message : 'validation error', validationArr})
-    } else {
-        next()
-    }
-  };
-*/

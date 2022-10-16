@@ -79,6 +79,30 @@ export const softDelete = {
     })
     .options({ allowUnknown: true }),
 };
+export const blockUser = {
+  params : joi.object().required().keys({
+      adminId : joi
+      .string()
+      .pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
+      .required(),
+      userId : joi
+      .string()
+      .pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
+      .required(),
+  }),
+}
+export const unBlockUser = {
+  params : joi.object().required().keys({
+      adminId : joi
+      .string()
+      .pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
+      .required(),
+      userId : joi
+      .string()
+      .pattern(new RegExp(/^[a-fA-F0-9]{24}$/))
+      .required(),
+  }),
+}
 export const signout = {
   headers: joi
     .object()

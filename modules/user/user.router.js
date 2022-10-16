@@ -4,7 +4,7 @@ import * as userController from "./controller/user.js";
 import validation from "./../../middleware/Validation.js";
 import * as validators from "./user.validator.js";
 const router = Router();
-router.get('/', userController.getAllUsers)
+router.get("/", userController.getAllUsers);
 router.get(
   "/:id",
   validation(validators.getUserById),
@@ -36,12 +36,20 @@ router.patch(
   userController.softDelete
 );
 router.patch(
+  "/blockUser/:adminId/:userId",
+  validation(validators.blockUser),
+  userController.blockUser
+);
+router.patch(
+  "/unBlockUser/:adminId/:userId",
+  validation(validators.unBlockUser),
+  userController.unBlockUser
+);
+router.patch(
   "/signout",
   validation(validators.signout),
   auth(),
   userController.signout
 );
-
-
 
 export default router;
